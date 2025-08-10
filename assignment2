@@ -1,0 +1,245 @@
+MongoDB Assignment 2: NoSQL Concept Using MongoDB
+Subject: Advanced Database Techniques / Advanced Database ConceptsInstitution: Progressive Education Society’s Modern College of Arts, Science and Commerce (Autonomous), Shivajinagar, Pune 5Program: M.Sc. Computer Science / Computer Application, A.Y. 2025-26Description: This assignment creates and manages users and roles in MongoDB, including an admin user, restricted users, a custom role, and IP-restricted access, with commands to display users and roles.
+1. Create adminUser with Full Administrative Control
+Command:
+use admin
+db.createUser({
+  user: "adminUser",
+  pwd: "admin123",
+  roles: ["userAdminAnyDatabase", "dbAdminAnyDatabase", "readWriteAnyDatabase"]
+})
+
+Output:
+switched to db admin
+{ ok: 1 }
+
+2. Create readerOnly with Read Access to library and school
+Command:
+db.createUser({
+  user: "readerOnly",
+  pwd: "readerPass",
+  roles: [
+    { role: "read", db: "library" },
+    { role: "read", db: "school" }
+  ]
+})
+
+Output:
+{ ok: 1 }
+
+3. Create collegeAdmin for college Database
+Command:
+db.createUser({
+  user: "collegeAdmin",
+  pwd: "collegePass",
+  roles: [
+    { role: "userAdmin", db: "college" },
+    { role: "dbAdmin", db: "college" }
+  ]
+})
+
+Output:
+{ ok: 1 }
+
+4. Create dualAccessUser with Mixed Access
+Command:
+db.createUser({
+  user: "dualAccessUser",
+  pwd: "dualPass",
+  roles: [
+    { role: "read", db: "school" },
+    { role: "readWrite", db: "college" }
+  ]
+})
+
+Output:
+{ ok: 1 }
+
+5. Create Custom Role readStudentsOnly and Assign to limitedUser
+Command (Create Role):
+use school
+db.createRole({
+  role: "readStudentsOnly",
+  privileges: [
+    { resource: { db: "school", collection: "students" }, actions: ["find"] }
+  ],
+  roles: []
+})
+
+Output:
+switched to db school
+{ ok: 1 }
+
+Command (Create limitedUser):
+use admin
+db.createUser({
+  user: "limitedUser",
+  pwd: "limitedPass",
+  roles: [
+    { role: "readStudentsOnly", db: "school" }
+  ]
+})
+
+Output:
+switched to db admin
+{ ok: 1 }
+
+6. Create ipRestrictedUser for finance DB
+Command:
+db.createUser({
+  user: "ipRestrictedUser",
+  pwd: "ipPass",
+  roles: [
+    { role: "readWrite", db: "finance" }
+  ]
+  // Note: Restricted to IP 192.168.1.50 (requires server/network config)
+})
+
+Output:
+{ ok: 1 }
+
+Note: IP restriction requires server/network configuration (e.g., MongoDB Atlas or firewall rules), not supported directly in user creation.
+7. Create tempUser and Update Role
+Command (Create):
+db.createUser({
+  user: "tempUser",
+  pwd: "tempPass",
+  roles: [
+    { role: "readWrite", db: "testDB" }
+  ]
+})
+
+Output:
+{ ok: 1 }
+
+Command (Update):
+db.updateUser("tempUser", {
+  roles: [
+    { role: "read", db: "testDB" }
+  ]
+})
+
+Output:
+{ ok: 1 }
+
+8. Create and Delete deleteMe
+Command (Create):
+db.createUser({
+  user: "deleteMe",
+  pwd: "deletePass",
+  roles: [
+    { role: "readWrite", db: "training" }
+  ]
+})
+
+Output:
+{ ok: 1 }
+
+Command (Delete):
+db.dropUser("deleteMe")
+
+Output:
+{ ok: 1 }
+
+9. Display All Users in admin Database
+Command:
+db.getUsers()
+
+Output:
+{
+  users: [
+    {
+      _id: 'admin.adminUser',
+      user: 'adminUser',
+      db: 'admin',
+      roles: [
+        { role: 'userAdminAnyDatabase', db: 'admin' },
+        { role: 'dbAdminAnyDatabase', db: 'admin' },
+        { role: 'readWriteAnyDatabase', db: 'admin' }
+      ]
+    },
+    {
+      _id: 'admin.readerOnly',
+      user: 'readerOnly',
+      db: 'admin',
+      roles: [
+        { role: 'read', db: 'library' },
+        { role: 'read', db: 'school' }
+      ]
+    },
+    {
+      _id: 'admin.collegeAdmin',
+      user: 'collegeAdmin',
+      db: 'admin',
+      roles: [
+        { role: 'userAdmin', db: 'college' },
+        { role: 'dbAdmin', db: 'college' }
+      ]
+    },
+    {
+      _id: 'admin.dualAccessUser',
+      user: 'dualAccessUser',
+      db: 'admin',
+      roles: [
+        { role: 'read', db: 'school' },
+        { role: 'readWrite', db: 'college' }
+      ]
+    },
+    {
+      _id: 'admin.limitedUser',
+      user: 'limitedUser',
+      db: 'admin',
+      roles: [
+        { role: 'readStudentsOnly', db: 'school' }
+      ]
+    },
+    {
+      _id: 'admin.ipRestrictedUser',
+      user: 'ipRestrictedUser',
+      db: 'admin',
+      roles: [
+        { role: 'readWrite', db: 'finance' }
+      ]
+    },
+    {
+      _id: 'admin.tempUser',
+      user: 'tempUser',
+      db: 'admin',
+      roles: [
+        { role: 'read', db: 'testDB' }
+      ]
+    }
+  ],
+  ok: 1
+}
+
+10. List All Roles in school Database
+Command:
+use school
+db.getRoles({ showPrivileges: true })
+
+Output:
+{
+  roles: [
+    {
+      role: 'readStudentsOnly',
+      db: 'school',
+      isBuiltin: false,
+      roles: [],
+      inheritedRoles: [],
+      privileges: [
+        {
+          resource: { db: 'school', collection: 'students' },
+          actions: ['find']
+        }
+      ],
+      inheritedPrivileges: [
+        {
+          resource: { db: 'school', collection: 'students' },
+          actions: ['find']
+        }
+      ]
+    }
+  ],
+  ok: 1
+}
